@@ -1,0 +1,140 @@
+BrainWave Assignment Reference Document: Custom Employee Portal with Zoho One Integration
+QuestionLink: https://drive.google.com/file/d/1NoORI2l__QRrnuF4uqThAonatkjR8_bk/view?usp=sharing
+1. Objective
+Build a web-based custom employee portal featuring built-in authentication and Role-Based Access Control (RBAC). The application must securely integrate with Zoho One APIs on the backend so employees can view and access only the specific Zoho applications permitted by their assigned role. Employees must never need individual Zoho credentials.
+2. Technical Requirements
+Frontend: React.js or Next.js
+Backend: Node.js (Express.js or NestJS)
+Database: PostgreSQL, MySQL, or MongoDB
+Third-Party Services: Zoho One Free Trial Account (Zoho API Access via API Console)
+Developer Tools: Node.js runtime, Postman/Insomnia, Git, GitHub account, Screen recording tool (e.g., Loom, OBS Studio)
+3. Step-by-Step Instructions
+Step 1: Setup Zoho API Credentials
+Sign up for a free trial Zoho One account.
+Register an application in the Zoho API Console to generate Client ID and Client Secret.
+Generate a refresh token to allow the backend service account to manage API access without requiring individual employee logins.
+Step 2: Database & Schema Setup
+Initialize your relational database.
+Create the required tables: Users, Roles, Permissions, UserRoles, RolePermissions, and AuditLogs.
+Seed the Roles table with initial roles: Admin, HR, Sales, Support, and Finance.
+Step 3: Backend Authentication & RBAC Layer
+Create a /api/auth/login endpoint that authenticates portal users and returns a signed JSON Web Token (JWT).
+Create an authorization middleware that inspects incoming JWTs, checks assigned roles and permissions, and attaches authorization state to request contexts.
+Add logic to secure token refreshing for backend-to-Zoho API operations.
+Step 4: Zoho API Integration Layer
+Build backend service functions that call Zoho OAuth endpoints using your backend credentials to secure access tokens automatically.
+Map roles to their target Zoho application URLs:
+HR $\rightarrow$ Zoho People
+Sales $\rightarrow$ Zoho CRM
+Support $\rightarrow$ Zoho Desk
+Finance $\rightarrow$ Zoho Books
+Create API endpoints to proxy authorized user requests directly to the correct Zoho services.
+Step 5: Frontend Dashboard & UI
+Build a login page to accept custom portal user credentials.
+Create a responsive dashboard that fetches the current user's authorized applications based on their assigned role upon logging in.
+Render entry buttons exclusively for permitted services (e.g., display Zoho Books only for Finance users).
+Build an Admin-only control view to manage users, assign roles, update permissions, and view audit logs.
+4. Project Structure
+Plaintext
+custom-employee-portal/
+├── backend/
+│   ├── src/
+│   │   ├── config/          # DB connection & environment setups
+│   │   ├── controllers/     # Route handler logic
+│   │   ├── middlewares/     # JWT & RBAC authorization handlers
+│   │   ├── models/          # DB schemas (Users, Roles, AuditLogs, etc.)
+│   │   ├── routes/          # Express API route endpoints
+│   │   └── services/        # Zoho API client & token logic
+│   ├── .env                 # Secret keys (Zoho Client ID, JWT Secret, DB URI)
+│   └── server.js            # App entry point
+└── frontend/
+    ├── src/
+    │   ├── components/      # UI components (Navbar, ProtectedRoute)
+    │   ├── pages/           # Views (Login, Dashboard, AdminPanel)
+    │   ├── services/        # Frontend API call handlers
+    │   └── utils/           # Helper functions & auth tokens
+    └── package.json
+​
+5. Example Code Snippets
+Backend RBAC Middleware (middlewares/rbac.js):
+JavaScript
+const jwt = require('jsonwebtoken');
+
+const verifyRole = (allowedRoles) => {
+  return (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: 'Unauthorized' });
+
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Check if user's role is permitted
+      if (!allowedRoles.includes(decoded.role)) {
+        return res.status(403).json({ message: 'Access Denied: Insufficient Permissions' });
+      }
+
+      req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: 'Invalid Token' });
+    }
+  };
+};
+
+module.exports = verifyRole;
+​
+Backend Zoho API Access Token Service (services/zohoService.js):
+JavaScript
+const axios = require('axios');
+
+async function getZohoAccessToken(){
+  try {
+    const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', null, {
+      params: {
+        refresh_token: process.env.ZOHO_REFRESH_TOKEN,
+        client_id: process.env.ZOHO_CLIENT_ID,
+        client_secret: process.env.ZOHO_CLIENT_SECRET,
+        grant_type: 'refresh_token'
+      }
+    });
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Failed to retrieve Zoho Access Token', error);
+    throw error;
+  }
+}
+​
+6. Submission Guidelines
+GitHub Repository Requirements
+Push complete code to a public GitHub repository.
+Include a comprehensive README.md containing instructions for installation, database setup, environment variable configuration, and steps to launch backend and frontend servers locally.
+Video Recording Requirements
+Record a clear, 3-to-5-minute screen recording with voice narration that covers:
+Project Overview: Brief demo of the user login flow across different roles (Admin, HR, Sales).
+RBAC Implementation: Show how access restrictions are enforced so each user role can only view and access their designated Zoho applications on the dashboard.
+Zoho API Integration: Walk through the backend code explaining how the single service account manages Zoho OAuth tokens securely, routes user requests, and protects credentials.
+Admin Capabilities: Show how admins manage users, assign roles, and inspect system audit logs.
+7. Evaluation Metrics
+Metric Category
+Criteria
+Weight
+RBAC Implementation
+  
+Correct database schema (Users, Roles, Permissions); secure JWT validation on every API request; backend restriction preventing users from accessing unauthorized Zoho services.  
+30%
+Zoho API Integration
+  
+Proper OAuth setup using a single backend service account; secure refresh token management; employees do not enter individual Zoho credentials.  
+25%
+Code Quality & Architecture
+  
+Clean project structure; proper error handling and status codes; secure storage of secrets in .env files; audit logging implemented.  
+20%
+UI/UX & Frontend
+  
+Responsive dashboard design; conditional rendering showing only authorized Zoho app links; functional Admin management views.
+15%
+Submission & Explanation
+Clear GitHub repository with a complete README.md; video presentation effectively explaining RBAC logic and Zoho OAuth integration within 3-5 minutes.
+10%

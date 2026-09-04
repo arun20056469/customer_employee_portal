@@ -1,0 +1,108 @@
+================================================================
+  CUSTOM EMPLOYEE PORTAL - Setup & Run Commands
+================================================================
+
+PREREQUISITES:
+  - Node.js (v18+) installed
+  - MongoDB installed and running (or use MongoDB Atlas)
+  - Git installed
+
+================================================================
+  1. CLONE & SETUP
+================================================================
+
+git clone <your-repo-url>
+# If you cloned the repository from its parent directory, enter the folder
+# created by git. If you are already in D:\custom_employee_portal, skip this.
+cd custom-employee-portal
+
+================================================================
+  2. BACKEND SETUP
+================================================================
+
+cd backend
+npm install
+copy .env.example .env
+
+# Edit .env with your actual credentials:
+#   - MONGO_URI (your MongoDB connection string)
+#   - JWT_SECRET (any secure random string)
+#   - ZOHO_CLIENT_ID (from Zoho API Console)
+#   - ZOHO_CLIENT_SECRET (from Zoho API Console)
+#   - ZOHO_REFRESH_TOKEN (generated via Zoho OAuth flow)
+
+# Seed the database with default roles and admin user
+node src/utils/seedData.js
+
+# Start the backend server (runs on port 5000)
+npm start
+
+# For development with auto-reload:
+npm run dev
+
+================================================================
+  3. FRONTEND SETUP (Open a new terminal)
+================================================================
+
+cd frontend
+npm install
+
+# Start the frontend dev server (runs on port 5173)
+npm run dev
+
+================================================================
+  4. DEFAULT LOGIN CREDENTIALS (After seeding)
+================================================================
+
+Admin Account:
+  Email:    admin@portal.com
+  Password: Admin@123
+
+================================================================
+  5. ACCESS THE APPLICATION
+================================================================
+
+Frontend:  http://localhost:5173
+Backend:   http://localhost:5000
+API Docs:  http://localhost:5000/api
+
+================================================================
+  6. PRODUCTION BUILD
+================================================================
+
+# Build frontend for production
+cd frontend
+npm run build
+
+# The build output will be in frontend/dist/
+
+================================================================
+  7. PROJECT STRUCTURE
+================================================================
+
+custom-employee-portal/
+├── backend/
+│   ├── src/
+│   │   ├── config/          # DB connection & env setup
+│   │   ├── controllers/     # Route handler logic
+│   │   ├── middlewares/     # JWT & RBAC authorization
+│   │   ├── models/          # MongoDB schemas
+│   │   ├── routes/          # Express API routes
+│   │   ├── services/        # Zoho API & audit services
+│   │   └── utils/           # Seed data & helpers
+│   ├── .env.example         # Environment template
+│   ├── package.json
+│   └── server.js            # App entry point
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── context/         # Auth context provider
+│   │   ├── pages/           # Page views
+│   │   ├── services/        # API call handlers
+│   │   └── App.jsx          # Main app with routing
+│   └── package.json
+├── commands.txt              # This file
+├── README.md
+└── .gitignore
+
+================================================================
